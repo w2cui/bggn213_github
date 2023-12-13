@@ -1,0 +1,11 @@
+---
+title: "Class13"
+author: "Wanning Cui"
+format: html
+---
+```{r}
+library(BiocManager)
+library(DESeq2)
+```
+
+
