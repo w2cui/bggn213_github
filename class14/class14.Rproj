@@ -1,0 +1,9 @@
+---
+title: "Class14"
+author: "Wanning Cui"
+format: html
+---
+
+```{r}
+library(DESeq2)
+```
