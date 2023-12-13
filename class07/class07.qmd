@@ -1,0 +1,201 @@
+---
+title: "class07"
+author: "Wanning"
+format: pdf
+---
+```{r}
+rnorm(10)
+```
+```{r}
+hist(rnorm(10000,mean=3))
+```
+```{r}
+tmp <- c(rnorm(30,3),rnorm(30,-3))
+```
+```{r}
+x <- cbind (x=tmp,y=rev(tmp))
+plot(x)
+```
+
+The main function in R for k-means clustering is called `kmeans()`.
+```{r}
+k<-kmeans(x, centers=2, nstart=20)
+k
+```
+
+>Q. How many  points are in each cluster?
+
+```{r}
+k$size
+```
+
+>Q2. The clustering result i.e. membership vector?
+
+```{r}
+k$cluster
+```
+
+>Q3. Cluster centers
+
+```{r}
+k$centers
+```
+
+>Q4.Make a plot of our data colored by clustering results with optionally the cluster centers shown
+
+```{r}
+plot(x, col=c("red","blue"))
+```
+```{r}
+plot(x,col=k$cluster,pch=16)
+points(k$centers, col="blue", pch=15, cex=2)
+```
+
+>Q5. Run kmeans again but cluster into 3 groups and plot the results like we did above.
+
+```{r}
+k3<-kmeans(x, centers=3, nstart=20)
+plot(x,col=k3$cluster,pch=16)
+points(k3$centers, col="blue", pch=15, cex=2)
+```
+
+K-means will always return a clustering result - even if there is no clear groupings.
+
+#Hierarchical Clustering
+Hierarchical clustering has an advantage in that it can reveal the structure in your data rather than imposing a structure as k-means will.
+
+The main function in "base" R is called `hclust()`
+
+It requires a distance matrix as input, not the raw data itself.
+
+```{r}
+hc <- hclust (dist(x))
+hc
+```
+```{r}
+plot(hc)
+abline(h=8, col="red")
+```
+The function to get our clusters/groups from a hclust object is called `cutree()`
+
+```{r}
+cutree(hc,h=8)
+```
+
+```{r}
+grps <- cutree(hc,h=8)
+grps
+```
+
+>Q. Plot our hclust results in terms of our data colored by cluster membership.
+
+```{r}
+plot(x, col=grps)
+```
+#Principal Component Analysis (PCA)
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url)
+dim(x)
+```
+Q1. 17 rows and 5 columns in my new data frame are named x. We can use dim() function to find out.
+
+```{r}
+head(x)
+```
+
+
+```{r}
+rownames(x) <- x[,1]
+rownames(x)
+```
+```{r}
+rownames(x) <- x[,1]
+x<-x[,-1]
+head(x)
+```
+```{r}
+rownames(x) <- x[,1]
+x <- x[,-1]
+head(x)
+```
+```{r}
+dim(x)
+```
+```{r}
+x <- read.csv(url, row.names=1)
+head(x)
+```
+
+Q2. I prefer the second approach because the data in my columns will not be truncated and the results can be retrieved in a more secure way. The second is more robust overall.
+
+#Spotting major differences and trends
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+```
+```{r}
+barplot(as.matrix(x), beside=F, col=rainbow(nrow(x)))
+```
+
+```{r}
+pairs(x,col=rainbow(10),pch=16)
+```
+Q5.If a given point lies on the diagonal, this indicates that the two countries have the same consumptions in that food category.
+
+Q6.N.Ireland has the most variation in the consumptions in different food categories with other countries.
+
+#PCA to the rescue
+
+The main function for PCA in base A is called `pucomp()`
+
+It wants the transpose(with the `t()`) of our food data for analysis
+```{r}
+t(x)
+```
+```{r}
+pca <- prcomp(t(x))
+summary(pca)
+```
+
+
+One of the main results that folks look for is called the "score plot" a.k.a. PC plot, PC1 vs PC2 plot
+
+```{r}
+pca$x
+```
+```{r}
+plot(pca$x[,1],pca$x[,2],xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x))
+```
+
+
+```{r}
+plot(pca$x[,1],pca$x[,2],xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x),col=c("orange","red","blue","green"))
+```
+```{r}
+v <- round( pca$sdev^2/sum(pca$sdev^2) * 100 )
+v
+```
+```{r}
+z <- summary(pca)
+z$importance
+```
+```{r}
+barplot(v, xlab="Principal Component", ylab="Percent Variation")
+```
+
+#Digging deeper (variable loading)
+
+```{r}
+## Lets focus on PC1 as it accounts for > 90% of variance 
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,1], las=2 )
+```
+```{r}
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,2], las=2 )
+```
+Q9. The soft drinks and fresh potatoes food groups feature most prominently in PC2. It tells us that these two food groups have the most variation between Wales and Scotland.
+
